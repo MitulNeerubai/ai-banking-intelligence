@@ -29,7 +29,7 @@ DB_CONFIG = {
     "port":     5433,
     "database": "financial_platform",
     "user":     "postgres",
-    "password": "Nikki@1435"   # <-- update this
+    "password": "*******"   # <-- update this
 }
 
 NUM_USERS        = 50
