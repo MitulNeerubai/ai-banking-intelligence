@@ -1,0 +1,67 @@
+// ============================================================
+// AI-Powered Financial Management Platform
+// ERD — Paste this into https://dbdiagram.io
+// ============================================================
+
+Table users {
+  id            int           [pk, increment]
+  username      varchar(50)   [not null, unique]
+  email         varchar(120)  [not null, unique]
+  password_hash text          [not null]
+  created_at    timestamp     [default: `now()`]
+}
+
+Table transactions {
+  id          int             [pk, increment]
+  user_id     int             [not null, ref: > users.id]
+  amount      decimal(10,2)   [not null]
+  category    varchar(50)
+  description text
+  date        date            [not null]
+  created_at  timestamp       [default: `now()`]
+}
+
+Table budgets {
+  id            int           [pk, increment]
+  user_id       int           [not null, ref: > users.id]
+  category      varchar(50)   [not null]
+  limit_amount  decimal(10,2) [not null]
+  month         int           [not null]
+  year          int           [not null]
+  created_at    timestamp     [default: `now()`]
+
+  indexes {
+    (user_id, category, month, year) [unique]
+  }
+}
+
+Table fraud_logs {
+  id              int          [pk, increment]
+  user_id         int          [not null, ref: > users.id]
+  transaction_id  int          [not null, ref: > transactions.id]
+  rule_triggered  varchar(100) [not null]
+  flagged_at      timestamp    [default: `now()`]
+}
+
+Table savings {
+  id                    int          [pk, increment]
+  user_id               int          [not null, ref: > users.id]
+  source_transaction_id int          [not null, ref: > transactions.id]
+  rounded_amount        decimal(10,2)[not null]
+  saved_at              timestamp    [default: `now()`]
+}
+
+Table recurring_transactions {
+  id              int           [pk, increment]
+  user_id         int           [not null, ref: > users.id]
+  merchant        varchar(100)  [not null]
+  average_amount  decimal(10,2) [not null]
+  frequency_days  int           [not null]
+  last_seen       date          [not null]
+  annual_estimate decimal(10,2)
+  created_at      timestamp     [default: `now()`]
+
+  indexes {
+    (user_id, merchant) [unique]
+  }
+}
