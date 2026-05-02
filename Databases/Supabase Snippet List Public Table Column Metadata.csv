@@ -1,0 +1,132 @@
+table_name,column_name,data_type,is_nullable,column_default
+budgets,id,integer,NO,nextval('budgets_id_seq'::regclass)
+budgets,user_id,integer,NO,null
+budgets,category,character varying,NO,null
+budgets,limit_amount,numeric,NO,null
+budgets,month,integer,NO,null
+budgets,year,integer,NO,null
+budgets,created_at,timestamp without time zone,YES,CURRENT_TIMESTAMP
+cashflow_forecasts,id,integer,NO,nextval('cashflow_forecasts_id_seq'::regclass)
+cashflow_forecasts,user_id,integer,NO,null
+cashflow_forecasts,account_id,text,NO,'all'::text
+cashflow_forecasts,as_of_date,date,NO,null
+cashflow_forecasts,horizon_days,integer,NO,null
+cashflow_forecasts,starting_balance,numeric,NO,0
+cashflow_forecasts,projected_end_balance,numeric,NO,0
+cashflow_forecasts,min_projected_balance,numeric,NO,0
+cashflow_forecasts,risk_score,numeric,NO,0
+cashflow_forecasts,projected_daily_balances,jsonb,NO,'[]'::jsonb
+cashflow_forecasts,drivers_json,jsonb,NO,'{}'::jsonb
+cashflow_forecasts,explanation_json,jsonb,NO,'{}'::jsonb
+cashflow_forecasts,created_at,timestamp without time zone,YES,CURRENT_TIMESTAMP
+fraud_logs,id,integer,NO,nextval('fraud_logs_id_seq'::regclass)
+fraud_logs,user_id,integer,NO,null
+fraud_logs,transaction_id,integer,NO,null
+fraud_logs,rule_triggered,character varying,NO,null
+fraud_logs,flagged_at,timestamp without time zone,YES,CURRENT_TIMESTAMP
+health_scores,id,integer,NO,nextval('health_scores_id_seq'::regclass)
+health_scores,user_id,integer,NO,null
+health_scores,account_id,text,NO,'all'::text
+health_scores,as_of_date,date,NO,null
+health_scores,analysis_window_days,integer,NO,90
+health_scores,health_score,integer,NO,0
+health_scores,savings_ratio,numeric,NO,0
+health_scores,volatility_score,numeric,NO,0
+health_scores,recurring_burden,numeric,NO,0
+health_scores,cash_buffer_days,numeric,NO,0
+health_scores,component_scores,jsonb,NO,'{}'::jsonb
+health_scores,explanation_json,jsonb,NO,'{}'::jsonb
+health_scores,created_at,timestamp without time zone,YES,CURRENT_TIMESTAMP
+health_scores,updated_at,timestamp without time zone,YES,CURRENT_TIMESTAMP
+plaid_items,id,integer,NO,nextval('plaid_items_id_seq'::regclass)
+plaid_items,user_id,integer,NO,null
+plaid_items,access_token,text,NO,null
+plaid_items,item_id,text,NO,null
+plaid_items,institution_id,text,YES,null
+plaid_items,institution_name,text,YES,null
+plaid_items,cursor,text,YES,null
+plaid_items,created_at,timestamp without time zone,YES,now()
+plaid_items,updated_at,timestamp without time zone,YES,now()
+recurring_events,id,integer,NO,nextval('recurring_events_id_seq'::regclass)
+recurring_events,recurring_id,integer,NO,null
+recurring_events,transaction_id,integer,YES,null
+recurring_events,date,date,NO,null
+recurring_events,amount,numeric,NO,null
+recurring_events,created_at,timestamp without time zone,YES,CURRENT_TIMESTAMP
+recurring_merchants,id,integer,NO,nextval('recurring_merchants_id_seq'::regclass)
+recurring_merchants,user_id,integer,NO,null
+recurring_merchants,account_id,text,NO,'all'::text
+recurring_merchants,merchant_key,text,NO,null
+recurring_merchants,merchant_display_name,text,NO,null
+recurring_merchants,cadence,text,NO,'unknown'::text
+recurring_merchants,avg_amount,numeric,NO,0
+recurring_merchants,amount_stddev,numeric,NO,0
+recurring_merchants,amount_tolerance,numeric,NO,0
+recurring_merchants,last_charge_date,date,YES,null
+recurring_merchants,next_expected_date,date,YES,null
+recurring_merchants,confidence_score,numeric,NO,0
+recurring_merchants,sample_size,integer,NO,0
+recurring_merchants,last_n_transactions,jsonb,NO,'[]'::jsonb
+recurring_merchants,explanation_json,jsonb,NO,'{}'::jsonb
+recurring_merchants,created_at,timestamp without time zone,YES,CURRENT_TIMESTAMP
+recurring_merchants,updated_at,timestamp without time zone,YES,CURRENT_TIMESTAMP
+recurring_transactions,id,integer,NO,nextval('recurring_transactions_id_seq'::regclass)
+recurring_transactions,user_id,integer,NO,null
+recurring_transactions,merchant,character varying,NO,null
+recurring_transactions,average_amount,numeric,NO,null
+recurring_transactions,frequency_days,integer,NO,null
+recurring_transactions,last_seen,date,NO,null
+recurring_transactions,annual_estimate,numeric,YES,null
+recurring_transactions,created_at,timestamp without time zone,YES,CURRENT_TIMESTAMP
+savings,id,integer,NO,nextval('savings_id_seq'::regclass)
+savings,user_id,integer,NO,null
+savings,source_transaction_id,integer,NO,null
+savings,rounded_amount,numeric,NO,null
+savings,saved_at,timestamp without time zone,YES,CURRENT_TIMESTAMP
+time_range_reports,id,integer,NO,nextval('time_range_reports_id_seq'::regclass)
+time_range_reports,user_id,integer,NO,null
+time_range_reports,account_id,text,NO,'all'::text
+time_range_reports,start_date,date,NO,null
+time_range_reports,end_date,date,NO,null
+time_range_reports,granularity,text,NO,'week'::text
+time_range_reports,total_spent,numeric,YES,0
+time_range_reports,total_income,numeric,YES,0
+time_range_reports,net_change,numeric,YES,0
+time_range_reports,top_merchants,jsonb,YES,'[]'::jsonb
+time_range_reports,top_categories,jsonb,YES,'[]'::jsonb
+time_range_reports,volatility_score,numeric,YES,0
+time_range_reports,explanation_json,jsonb,YES,'{}'::jsonb
+time_range_reports,created_at,timestamp without time zone,YES,CURRENT_TIMESTAMP
+time_range_reports,period_change,numeric,YES,0
+transactions,id,integer,NO,nextval('transactions_id_seq'::regclass)
+transactions,user_id,integer,NO,null
+transactions,amount,numeric,NO,null
+transactions,category,character varying,YES,null
+transactions,description,text,YES,null
+transactions,date,date,NO,CURRENT_DATE
+transactions,created_at,timestamp without time zone,YES,CURRENT_TIMESTAMP
+transactions,plaid_transaction_id,text,YES,null
+transactions,source,text,YES,'manual'::text
+transactions,plaid_account_id,character varying,YES,null
+transactions,institution_name,character varying,YES,null
+transactions,account_name,character varying,YES,null
+users,id,integer,NO,nextval('users_id_seq'::regclass)
+users,username,character varying,NO,null
+users,email,character varying,NO,null
+users,password_hash,text,NO,null
+users,created_at,timestamp without time zone,YES,CURRENT_TIMESTAMP
+weekly_reports,id,integer,NO,nextval('weekly_reports_id_seq'::regclass)
+weekly_reports,user_id,integer,NO,null
+weekly_reports,account_id,text,NO,'all'::text
+weekly_reports,week_start,date,NO,null
+weekly_reports,week_end,date,NO,null
+weekly_reports,total_spent,numeric,YES,0
+weekly_reports,total_income,numeric,YES,0
+weekly_reports,net_change,numeric,YES,0
+weekly_reports,top_merchants,jsonb,YES,'[]'::jsonb
+weekly_reports,top_categories,jsonb,YES,'[]'::jsonb
+weekly_reports,week_over_week_change,numeric,YES,null
+weekly_reports,volatility_score,numeric,YES,0
+weekly_reports,explanation_json,jsonb,YES,'{}'::jsonb
+weekly_reports,created_at,timestamp without time zone,YES,CURRENT_TIMESTAMP
+weekly_reports,updated_at,timestamp without time zone,YES,CURRENT_TIMESTAMP
