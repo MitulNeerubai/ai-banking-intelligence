@@ -25,14 +25,14 @@ An AI-powered financial management platform that connects real bank accounts, vi
 
 ## Features
 
-- **Bank Connectivity** — Connect real bank accounts via Plaid API (sandbox mode)
-- **Spending Analytics** — Interactive pie and bar charts powered by Recharts
-- **AI Chatbot** — Ask financial questions, get personalized answers via Google Gemini 2.5 Flash
-- **Financial Health Score** — Dynamic score based on Savings Rate, Spending Stability, Subscription Load, and Cash Buffer
-- **Cash Flow Forecast** — 7/14/30-day balance projections with overdraft risk detection
-- **Recurring Payments** — Auto-detects subscriptions and recurring charges
-- **Bank-Grade Security** — bcrypt, JWT, Fernet encryption, SSL
-- **Multi-Language Support** — English, Spanish, French, German
+- **Bank Connectivity** - Connect real bank accounts via Plaid API (sandbox mode)
+- **Spending Analytics** - Interactive pie and bar charts powered by Recharts
+- **AI Chatbot** - Ask financial questions, get personalized answers via Google Gemini 2.5 Flash
+- **Financial Health Score** - Dynamic score based on Savings Rate, Spending Stability, Subscription Load, and Cash Buffer
+- **Cash Flow Forecast** - 7/14/30-day balance projections with overdraft risk detection
+- **Recurring Payments** - Auto-detects subscriptions and recurring charges
+- **Bank-Grade Security** - bcrypt, JWT, Fernet encryption, SSL
+- **Multi-Language Support** - English, Spanish, French, German
 
 ---
 
