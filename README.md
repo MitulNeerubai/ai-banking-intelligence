@@ -1,2 +1,151 @@
-# ai-banking-intelligence
-Secure AI-powered financial management platform with fraud detection, recurring payment analysis, round-up savings, and LLM-driven insights.
+# GuideSpend AI 🚀
+### Smart Spending. Clear Decisions.
+
+> An AI-powered financial management platform that connects real bank accounts, visualizes spending patterns, and provides personalized financial guidance through an intelligent chatbot.
+
+---
+
+## 🌐 Live Demo
+
+- **Frontend:** `[Add Vercel URL here after deployment]`
+- **Backend:** `[Add Render URL here after deployment]`
+
+---
+
+## 👥 Team 8 — UMKC Capstone Spring 2026
+
+| Name | Role |
+|------|------|
+| Mitul Neerubai | Project Lead / Full-Stack Developer |
+| Madhavananda Sangaraju | Backend Developer / Database Engineer |
+| Siva Nikitha Mandla | AI Integration / QA Engineer |
+| Sai Praneeth Pothuri | Frontend Developer / UI Designer |
+
+---
+
+## ✨ Features
+
+- 🏦 **Bank Connectivity** — Connect real bank accounts via Plaid API (sandbox mode)
+- 📊 **Spending Analytics** — Interactive pie and bar charts powered by Recharts
+- 🤖 **AI Chatbot** — Ask financial questions, get personalized answers via Google Gemini 2.5 Flash
+- 💯 **Financial Health Score** — Dynamic score based on Savings Rate, Spending Stability, Subscription Load, and Cash Buffer
+- 📈 **Cash Flow Forecast** — 7/14/30-day balance projections with overdraft risk detection
+- 🔄 **Recurring Payments** — Auto-detects subscriptions and recurring charges
+- 🔒 **Bank-Grade Security** — bcrypt, JWT, Fernet encryption, SSL
+- 🌍 **Multi-Language Support** — English, Spanish, French, German
+
+---
+
+## 🛠 Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 19, Vite, Tailwind CSS, Recharts, Axios |
+| Backend | Flask (Python), Flask-JWT-Extended, psycopg2, bcrypt, Gunicorn |
+| Database | PostgreSQL on Supabase (13 tables) |
+| Banking API | Plaid API (sandbox) |
+| AI Chatbot | Google Gemini 2.5 Flash |
+| DevOps | GitHub, Render, Vercel, Jira, Figma |
+
+---
+
+## 🚀 Running Locally
+
+### Prerequisites
+- Python 3.10+
+- Node.js 18+
+- A Supabase PostgreSQL database
+- Plaid API credentials (sandbox)
+- Google Gemini API key
+
+### Step 1 — Clone the repository
+```bash
+git clone https://github.com/MitulNeerubai/ai-banking-intelligence.git
+cd ai-banking-intelligence
+```
+
+### Step 2 — Set up environment variables
+```bash
+cd Backend
+cp .env.example .env
+```
+
+Open `.env` and **replace with your own credentials** — this is the only file you need to change:
+
+```env
+DB_HOST=your_supabase_host
+DB_PORT=5432
+DB_NAME=postgres
+DB_USER=your_supabase_user
+DB_PASSWORD=your_supabase_password
+JWT_SECRET=your_jwt_secret_key
+PLAID_CLIENT_ID=your_plaid_client_id
+PLAID_SECRET=your_plaid_secret
+PLAID_ENV=sandbox
+PLAID_ENCRYPTION_KEY=your_fernet_encryption_key
+GEMINI_API_KEY=your_gemini_api_key
+```
+
+### Step 3 — Run the Backend
+```bash
+cd Backend
+python -m venv venv
+.\venv\Scripts\Activate.ps1    # Windows
+# source venv/bin/activate     # Mac/Linux
+pip install -r requirements.txt
+python app.py
+```
+Backend runs on **http://localhost:10000**
+
+### Step 4 — Run the Frontend
+Open a **new terminal**:
+```bash
+cd Frontend
+npm install
+npm run dev -- --host
+```
+Frontend runs on **http://localhost:5173**
+
+---
+
+## 🏦 Connecting a Bank Account (Sandbox)
+
+Use these Plaid sandbox test credentials:
+
+| Field | Value |
+|-------|-------|
+| Username | `user_good` |
+| Password | `pass_good` |
+
+---
+
+## 🗄 Database
+
+The application uses PostgreSQL with **13 tables**:
+
+| Table | Description |
+|-------|-------------|
+| users | Registered user accounts |
+| transactions | Manual and Plaid-synced transactions |
+| plaid_items | Encrypted Plaid access tokens |
+| health_scores | Financial health score calculations |
+| cashflow_forecasts | Cash flow projection data |
+| recurring_merchants | Detected recurring payment merchants |
+| recurring_transactions | Recurring transaction patterns |
+| recurring_events | Recurring payment events |
+| time_range_reports | Financial insights by time range |
+| weekly_reports | Weekly financial summaries |
+| budgets | Monthly spending limits (future) |
+| fraud_logs | Suspicious transaction flags (future) |
+| savings | Round-up savings tracking (future) |
+
+See `Database/schema.sql` for the full schema definition.
+
+To seed the database with test data:
+```bash
+python generate_data.py
+```
+
+---
+
+## 📁 Project Structure
