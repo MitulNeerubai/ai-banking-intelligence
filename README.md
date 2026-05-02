@@ -143,37 +143,6 @@ See `Database/schema.sql` for the full schema definition.
 
 ---
 
-## 📁 Project Structure
-
-ai-banking-intelligence/
-├── Backend/
-│   ├── app.py              # Flask entry point
-│   ├── config.py           # Database configuration
-│   ├── routes/             # API route handlers
-│   ├── models/             # Database models
-│   ├── services/           # Business logic
-│   ├── utils/              # Utility functions
-│   ├── .env.example        # Environment variables template
-│   └── requirements.txt    # Python dependencies
-├── Frontend/
-│   ├── src/
-│   │   ├── pages/          # React pages
-│   │   ├── components/     # Reusable components
-│   │   ├── context/        # React context providers
-│   │   ├── api/            # API client functions
-│   │   └── hooks/          # Custom React hooks
-│   ├── package.json
-│   └── vite.config.js
-├── Database/
-│   └── schema.sql          # Database schema
-├── generate_data.py        # Seed data generator
-└── README.md
-
----
-
-
----
-
 ## 🔒 Security
 
 - Passwords hashed with **bcrypt** - never stored in plain text
@@ -181,23 +150,6 @@ ai-banking-intelligence/
 - Plaid access tokens encrypted with **Fernet** symmetric encryption
 - All database connections use **SSL** (sslmode=require)
 - Environment variables never committed to version control
-
----
-
-## API Endpoints
-
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| POST | /register | Create new account | No |
-| POST | /login | Login and get JWT | No |
-| GET | /transactions | Get all transactions | JWT |
-| POST | /transactions | Add manual transaction | JWT |
-| DELETE | /transactions/<id> | Delete transaction | JWT |
-| POST | /plaid/create_link_token | Create Plaid link token | JWT |
-| POST | /plaid/exchange_token | Exchange public token | JWT |
-| POST | /plaid/sync_transactions | Sync transactions | JWT |
-| GET | /plaid/accounts | Get linked accounts | JWT |
-| POST | /v1/chatbot/chat | AI chatbot query | JWT |
 
 ---
 
