@@ -315,19 +315,60 @@ export default function InsightsCard({
   setCustomRange,
   applyCustomRange,
 }) {
-  // Loading state (no data yet)
-  if (loading && !data) {
-    return <SkeletonCard />;
-  }
+  // For custom-mode errors (e.g. "end date in the future"), retry must reset
+  // the date inputs — not re-fetch the same invalid range.
+  const handleError = mode === 'custom'
+    ? () => { setCustomRange('', ''); setMode('custom'); }
+    : refresh;
 
-  // Error state (non-breaking)
-  if (error && !data) {
-    return <ErrorFallback error={error} onRetry={refresh} />;
-  }
-
-  // No data yet
   if (!data) {
-    return null;
+    if (loading) return <SkeletonCard />;
+    if (error) return <ErrorFallback error={error} onRetry={handleError} />;
+    // loading=false, error=null, data=null:
+    //   • Custom mode not yet applied (awaiting date selection), OR
+    //   • Request was superseded before it could set data.
+    // Show the card shell so tabs/controls remain interactive.
+    return (
+      <div className="backdrop-blur-xl bg-white/5 rounded-2xl border border-white/10 p-6 shadow-xl space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h4 className="text-sm font-semibold text-white">Financial Insights</h4>
+            <p className="text-[11px] text-slate-500 mt-0.5">
+              {mode === 'custom' ? 'Custom range overview' : `${MODE_LABELS[mode] || 'Period'} overview`}
+            </p>
+          </div>
+          <ModeTabs mode={mode} setMode={setMode} />
+        </div>
+        <div className="border-t border-white/5 pt-4">
+          {mode === 'custom' && (
+            <CustomNav
+              customStart={customStart}
+              customEnd={customEnd}
+              setCustomRange={setCustomRange}
+              applyCustomRange={applyCustomRange}
+              data={null}
+              loading={false}
+            />
+          )}
+        </div>
+        <div className="py-8 flex flex-col items-center gap-3 text-center">
+          <Activity className="w-8 h-8 text-slate-600 mx-auto" />
+          <p className="text-sm text-slate-400">
+            {mode === 'custom'
+              ? 'Select a date range above and click Apply to see insights.'
+              : 'No insights available. Try refreshing.'}
+          </p>
+          {mode !== 'custom' && (
+            <button
+              onClick={refresh}
+              className="text-xs font-semibold px-4 py-2 rounded-lg bg-teal-500/20 text-teal-400 border border-teal-500/30 hover:bg-teal-500/30 transition-all cursor-pointer"
+            >
+              Retry
+            </button>
+          )}
+        </div>
+      </div>
+    );
   }
 
   const {
@@ -338,7 +379,9 @@ export default function InsightsCard({
     explanation = {},
   } = data;
 
-  const volLevel = explanation.volatility_level || 'low';
+  const isEmpty = total_spent === 0 && total_income === 0;
+
+  const volLevel = (explanation?.volatility_level) || 'low';
   const volConfig = VOLATILITY_CONFIG[volLevel] || VOLATILITY_CONFIG.low;
 
   // Period change direction
@@ -365,10 +408,10 @@ export default function InsightsCard({
           <div>
             <h4 className="text-sm font-semibold text-white">Financial Insights</h4>
             <p className="text-[11px] text-slate-500 mt-0.5">
-              {data.granularity === 'week' && 'Weekly overview'}
-              {data.granularity === 'month' && 'Monthly overview'}
-              {data.granularity === 'rolling' && `Rolling ${(new Date(data.end_date + 'T00:00:00') - new Date(data.start_date + 'T00:00:00')) / 86400000 + 1}-day overview`}
-              {data.granularity === 'custom' && 'Custom range overview'}
+              {mode === 'week' && 'Weekly overview'}
+              {mode === 'month' && 'Monthly overview'}
+              {mode === 'rolling' && `Rolling ${rollingDays}-day overview`}
+              {mode === 'custom' && 'Custom range overview'}
             </p>
           </div>
 
@@ -413,95 +456,108 @@ export default function InsightsCard({
         )}
       </div>
 
-      {/* ── Top Row: 3 Metric Tiles ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        {/* Total Spent */}
-        <div className="bg-white/[0.03] rounded-xl p-4 border border-white/5">
-          <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-            Total Spent
-          </p>
-          <p className="text-xl font-extrabold text-white mt-1.5">
-            {formatCurrency(total_spent)}
-          </p>
+      {/* ── Empty period state ── */}
+      {isEmpty && !loading ? (
+        <div className="py-10 flex flex-col items-center gap-3 text-center">
+          <div className="w-10 h-10 rounded-xl bg-slate-400/10 flex items-center justify-center">
+            <Activity className="w-5 h-5 text-slate-500" />
+          </div>
+          <p className="text-sm font-medium text-slate-300">No transactions found for this period</p>
+          <p className="text-xs text-slate-500">Try selecting a different time range.</p>
         </div>
+      ) : (
+        <>
+          {/* ── Top Row: 3 Metric Tiles ── */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {/* Total Spent */}
+            <div className="bg-white/[0.03] rounded-xl p-4 border border-white/5">
+              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                Total Spent
+              </p>
+              <p className="text-xl font-extrabold text-white mt-1.5">
+                {formatCurrency(total_spent)}
+              </p>
+            </div>
 
-        {/* Period Change */}
-        <div className="bg-white/[0.03] rounded-xl p-4 border border-white/5">
-          <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-            {vsLabel}
-          </p>
-          <div className="flex items-center gap-2 mt-1.5">
-            <ChangeIcon className={`w-5 h-5 ${changeColor}`} />
-            <span className={`text-xl font-extrabold ${changeColor}`}>
-              {period_change > 0 ? '+' : ''}
-              {period_change.toFixed(1)}%
-            </span>
-          </div>
-        </div>
+            {/* Period Change */}
+            <div className="bg-white/[0.03] rounded-xl p-4 border border-white/5">
+              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                {vsLabel}
+              </p>
+              <div className="flex items-center gap-2 mt-1.5">
+                <ChangeIcon className={`w-5 h-5 ${changeColor}`} />
+                <span className={`text-xl font-extrabold ${changeColor}`}>
+                  {period_change > 0 ? '+' : ''}
+                  {period_change.toFixed(1)}%
+                </span>
+              </div>
+            </div>
 
-        {/* Volatility Badge */}
-        <div className="bg-white/[0.03] rounded-xl p-4 border border-white/5">
-          <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-            Spending Volatility
-          </p>
-          <div className="flex items-center gap-2 mt-1.5">
-            <Activity className={`w-5 h-5 ${volConfig.color}`} />
-            <span
-              className={`inline-flex items-center text-xs font-bold px-2.5 py-1 rounded-lg ${volConfig.bg} ${volConfig.color} ${volConfig.border} border`}
-            >
-              {volConfig.label}
-            </span>
-            <span className="text-xs text-slate-500">{volatility_score.toFixed(0)}/100</span>
+            {/* Volatility Badge */}
+            <div className="bg-white/[0.03] rounded-xl p-4 border border-white/5">
+              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                Spending Volatility
+              </p>
+              <div className="flex items-center gap-2 mt-1.5">
+                <Activity className={`w-5 h-5 ${volConfig.color}`} />
+                <span
+                  className={`inline-flex items-center text-xs font-bold px-2.5 py-1 rounded-lg ${volConfig.bg} ${volConfig.color} ${volConfig.border} border`}
+                >
+                  {volConfig.label}
+                </span>
+                <span className="text-xs text-slate-500">{volatility_score.toFixed(0)}/100</span>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
 
-      {/* ── Middle Row: Merchant + Category ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {/* Biggest Merchant */}
-        <div className="bg-white/[0.03] rounded-xl p-4 border border-white/5 flex items-start gap-3">
-          <div className="w-8 h-8 rounded-lg bg-blue-400/10 flex items-center justify-center shrink-0">
-            <ShoppingBag className="w-4 h-4 text-blue-400" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-              Biggest Merchant
-            </p>
-            <p className="text-sm font-semibold text-white mt-1 truncate">
-              {explanation.biggest_merchant || 'No data'}
-            </p>
-          </div>
-        </div>
+          {/* ── Middle Row: Merchant + Category ── */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Biggest Merchant */}
+            <div className="bg-white/[0.03] rounded-xl p-4 border border-white/5 flex items-start gap-3">
+              <div className="w-8 h-8 rounded-lg bg-blue-400/10 flex items-center justify-center shrink-0">
+                <ShoppingBag className="w-4 h-4 text-blue-400" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                  Biggest Merchant
+                </p>
+                <p className="text-sm font-semibold text-white mt-1 truncate">
+                  {explanation?.biggest_merchant || 'No data'}
+                </p>
+              </div>
+            </div>
 
-        {/* Largest Category */}
-        <div className="bg-white/[0.03] rounded-xl p-4 border border-white/5 flex items-start gap-3">
-          <div className="w-8 h-8 rounded-lg bg-violet-400/10 flex items-center justify-center shrink-0">
-            <Tag className="w-4 h-4 text-violet-400" />
+            {/* Largest Category */}
+            <div className="bg-white/[0.03] rounded-xl p-4 border border-white/5 flex items-start gap-3">
+              <div className="w-8 h-8 rounded-lg bg-violet-400/10 flex items-center justify-center shrink-0">
+                <Tag className="w-4 h-4 text-violet-400" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                  Largest Category
+                </p>
+                <p className="text-sm font-semibold text-white mt-1 truncate">
+                  {explanation?.largest_category || 'No data'}
+                </p>
+              </div>
+            </div>
           </div>
-          <div className="min-w-0">
-            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-              Largest Category
-            </p>
-            <p className="text-sm font-semibold text-white mt-1 truncate">
-              {explanation.largest_category || 'No data'}
-            </p>
-          </div>
-        </div>
-      </div>
 
-      {/* ── Bottom: Summary + Spending Change ── */}
-      <div className="border-t border-white/5 pt-4 space-y-2">
-        {explanation.summary && (
-          <p className="text-sm text-slate-300 leading-relaxed">
-            {explanation.summary}
-          </p>
-        )}
-        {explanation.spending_change && (
-          <p className={`text-xs font-medium ${changeColor}`}>
-            {explanation.spending_change}
-          </p>
-        )}
-      </div>
+          {/* ── Bottom: Summary + Spending Change ── */}
+          <div className="border-t border-white/5 pt-4 space-y-2">
+            {explanation?.summary && (
+              <p className="text-sm text-slate-300 leading-relaxed">
+                {explanation.summary}
+              </p>
+            )}
+            {explanation?.spending_change && (
+              <p className={`text-xs font-medium ${changeColor}`}>
+                {explanation.spending_change}
+              </p>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }

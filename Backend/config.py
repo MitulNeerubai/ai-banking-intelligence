@@ -37,6 +37,9 @@ class Config:
     # ── Encryption ──
     PLAID_ENCRYPTION_KEY = os.getenv("PLAID_ENCRYPTION_KEY")
 
+    # ── Gemini AI ──
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
     # ── Pagination defaults ──
     DEFAULT_PAGE = 1
     DEFAULT_PER_PAGE = 50

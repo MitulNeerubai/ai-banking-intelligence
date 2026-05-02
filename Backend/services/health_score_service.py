@@ -41,7 +41,9 @@ WEIGHTS = {
 
 def get_health_score(user_id: int, account_id: str = "all",
                      window_days: int = 90,
-                     current_balance: float = None) -> dict:
+                     current_balance: float = None,
+                     total_income_override: float = None,
+                     total_spending_override: float = None) -> dict:
     """
     Compute (or return cached) the Financial Health Score.
 
@@ -49,7 +51,12 @@ def get_health_score(user_id: int, account_id: str = "all",
         user_id: Authenticated user
         account_id: plaid_account_id or "all"
         window_days: Analysis window (30, 60, or 90 days)
-        current_balance: Real-time balance from Plaid (optional)
+        current_balance: Real-time balance from frontend (optional)
+        total_income_override: Income from loaded transactions (optional).
+            When provided, used for the savings ratio so the score matches
+            what the summary cards display. Cache is skipped.
+        total_spending_override: Spending from loaded transactions (optional).
+            Paired with total_income_override.
 
     Returns:
         Full health score dict matching the API response spec.
@@ -60,27 +67,43 @@ def get_health_score(user_id: int, account_id: str = "all",
     account_id = account_id if account_id and account_id != "all" else "all"
     today_str = str(date.today())
 
-    # ── Try cache first ──
-    try:
-        cached = hs_model.find_score(user_id, account_id, today_str, window_days)
-        if cached:
-            log.info("Returning cached health score",
-                     extra={"context": {"user_id": user_id, "score": cached["health_score"]}})
-            return _format_response(cached)
-    except Exception:
-        log.warning("Cache lookup failed, recomputing",
-                    extra={"context": {"user_id": user_id}})
+    has_overrides = (total_income_override is not None
+                     or total_spending_override is not None)
+
+    # ── Try cache first (skip when overrides are provided — they're dynamic) ──
+    if not has_overrides:
+        try:
+            cached = hs_model.find_score(user_id, account_id, today_str, window_days)
+            if cached:
+                log.info("Returning cached health score",
+                         extra={"context": {"user_id": user_id, "score": cached["health_score"]}})
+                return _format_response(cached)
+        except Exception:
+            log.warning("Cache lookup failed, recomputing",
+                        extra={"context": {"user_id": user_id}})
 
     # ── Compute fresh score ──
     t0 = time.monotonic()
 
     # 1. Fetch raw metrics
-    total_income = hs_model.fetch_total_income(user_id, account_id, window_days)
-    total_spending = hs_model.fetch_total_spending(user_id, account_id, window_days)
+    # Use frontend overrides for income/spending when provided so the savings
+    # rate matches the summary cards exactly; fall back to DB aggregates.
+    total_income = (total_income_override
+                    if total_income_override is not None
+                    else hs_model.fetch_total_income(user_id, account_id, window_days))
+    total_spending = (total_spending_override
+                      if total_spending_override is not None
+                      else hs_model.fetch_total_spending(user_id, account_id, window_days))
     volatility_cv = hs_model.fetch_daily_spending_stddev(user_id, account_id, window_days)
     monthly_recurring = hs_model.fetch_monthly_recurring_total(user_id, account_id)
     daily_spend_avg = hs_model.fetch_daily_spending_avg(user_id, account_id, min(window_days, 30))
     txn_count = hs_model.fetch_transaction_count(user_id, account_id, window_days)
+
+    # No transactions at all — return early with no_data flag, no scores computed
+    if txn_count == 0:
+        log.info("Health score skipped — no transactions",
+                 extra={"context": {"user_id": user_id}})
+        return {"no_data": True}
 
     balance = current_balance if current_balance is not None else 0.0
 

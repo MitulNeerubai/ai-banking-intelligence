@@ -46,19 +46,19 @@ export function useTimeRangeInsights() {
 
   // ── Data state ──
   const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // true so skeleton shows before first fetch
   const [error, setError] = useState(null);
 
   // ── Race-condition protection ──
   const requestIdRef = useRef(0);
 
-  // ── Mode setter: reset offset, clear stale data, persist ──
+  // ── Mode setter: reset offset, clear error, persist ──
   const setMode = useCallback((newMode) => {
     if (!VALID_MODES.includes(newMode)) return;
     setModeState(newMode);
     setOffset(0);
     setCustomApplied(false);
-    setData(null);
+    setError(null); // clear any previous fetch error so it doesn't bleed into the new mode
     try {
       localStorage.setItem(STORAGE_KEY, newMode);
     } catch { /* quota exceeded — ignore */ }
@@ -124,31 +124,43 @@ export function useTimeRangeInsights() {
   // ── Fetch ──
   const fetchInsights = useCallback(async (params) => {
     const currentRequestId = ++requestIdRef.current;
+    const controller = new AbortController();
 
     setLoading(true);
     setError(null);
 
+    // 5-second hard timeout — abort the request if the backend doesn't respond.
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
     try {
-      const result = await insightsApi.getTimeRangeInsights(params);
+      const result = await insightsApi.getTimeRangeInsights(params, controller.signal);
       if (currentRequestId === requestIdRef.current) {
         setData(result);
+        setError(null);
       }
     } catch (err) {
       if (currentRequestId === requestIdRef.current) {
-        setError(err.message || 'Failed to load insights');
+        const isTimeout = err?.name === 'AbortError' || err?.code === 'ERR_CANCELED';
+        setError(isTimeout ? 'Request timed out. Please try again.' : (err?.message || 'Failed to load insights'));
       }
     } finally {
-      if (currentRequestId === requestIdRef.current) {
-        setLoading(false);
-      }
+      clearTimeout(timeoutId);
+      // Always reset loading — do NOT guard with ID check.
+      // Guarding caused loading to get stuck true whenever any newer request fired.
+      setLoading(false);
     }
   }, []);
 
   // ── Auto-fetch when params change ──
   useEffect(() => {
-    if (shouldFetch) {
-      fetchInsights(queryParams);
+    if (!shouldFetch) {
+      // Custom mode with no date applied — nothing to fetch.
+      // Clear loading and any stale error so the date picker renders cleanly.
+      setLoading(false);
+      setError(null);
+      return;
     }
+    fetchInsights(queryParams);
   }, [queryParams, shouldFetch, fetchInsights]);
 
   // ── Manual refresh ──

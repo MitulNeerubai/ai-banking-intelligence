@@ -60,7 +60,9 @@
       "Bash(pip install:*)",
       "Bash(taskkill //F //IM python.exe)",
       "Bash(taskkill //F //PID 21180)",
-      "Bash(curl -s http://127.0.0.1:5173/api/health)"
+      "Bash(curl -s http://127.0.0.1:5173/api/health)",
+      "Bash(python -c \"from google import genai; from google.genai import types; print\\('OK'\\)\")",
+      "Bash(python -c \"from routes.chatbot import chatbot_bp; print\\('Blueprint:', chatbot_bp.name, chatbot_bp.url_prefix\\)\")"
     ]
   }
 }

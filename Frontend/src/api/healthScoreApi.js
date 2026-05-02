@@ -25,6 +25,12 @@ export const healthScoreApi = {
     if (params.current_balance !== undefined && params.current_balance !== null) {
       query.current_balance = params.current_balance;
     }
+    if (params.total_income !== undefined && params.total_income !== null) {
+      query.total_income = params.total_income;
+    }
+    if (params.total_spending !== undefined && params.total_spending !== null) {
+      query.total_spending = params.total_spending;
+    }
     const res = await apiClient.get('/v1/health-score', { params: query });
     return res.data;
   },

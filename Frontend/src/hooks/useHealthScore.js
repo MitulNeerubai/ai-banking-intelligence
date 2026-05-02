@@ -17,7 +17,7 @@ import { healthScoreApi } from '../api/healthScoreApi';
 
 const VALID_WINDOWS = [30, 60, 90];
 
-export function useHealthScore(currentBalance = null) {
+export function useHealthScore(currentBalance = null, totalIncome = null, totalSpending = null) {
   const { selectedAccountId } = useAccount();
 
   const [healthScore, setHealthScore] = useState(null);
@@ -30,7 +30,7 @@ export function useHealthScore(currentBalance = null) {
   const setWindowDays = useCallback((days) => {
     if (VALID_WINDOWS.includes(days)) {
       setWindowDaysState(days);
-      setHealthScore(null); // Clear stale data
+      setHealthScore(null);
     }
   }, []);
 
@@ -46,6 +46,8 @@ export function useHealthScore(currentBalance = null) {
         account_id: selectedAccountId,
         window_days: windowDays,
         current_balance: currentBalance,
+        total_income: totalIncome,
+        total_spending: totalSpending,
       });
       if (currentRequestId === requestIdRef.current) {
         setHealthScore(result);
@@ -59,7 +61,7 @@ export function useHealthScore(currentBalance = null) {
         setLoading(false);
       }
     }
-  }, [selectedAccountId, windowDays, currentBalance]);
+  }, [selectedAccountId, windowDays, currentBalance, totalIncome, totalSpending]);
 
   // ── Auto-fetch when params change ──
   useEffect(() => {

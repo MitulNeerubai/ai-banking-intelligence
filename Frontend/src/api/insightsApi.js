@@ -18,7 +18,7 @@ export const insightsApi = {
    * @param {string}  [params.end]        - custom end YYYY-MM-DD
    * @param {string}  [params.account_id] - plaid_account_id or omit for all
    */
-  async getTimeRangeInsights(params = {}) {
+  async getTimeRangeInsights(params = {}, signal) {
     const query = { type: params.type || 'week' };
 
     if (params.offset !== undefined && params.offset !== null) {
@@ -31,7 +31,7 @@ export const insightsApi = {
       query.account_id = params.account_id;
     }
 
-    const res = await apiClient.get('/v1/insights/time-range', { params: query });
+    const res = await apiClient.get('/v1/insights/time-range', { params: query, signal });
     return res.data;
   },
 

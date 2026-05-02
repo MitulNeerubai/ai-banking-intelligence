@@ -50,7 +50,7 @@ const WINDOW_OPTIONS = [
 ];
 
 const COMPONENT_CONFIG = {
-  savings:       { label: 'Savings Rate',    Icon: PiggyBank,  metricKey: 'savings_ratio',       format: (v) => `${(v * 100).toFixed(0)}%` },
+  savings:       { label: 'Savings Rate',    Icon: PiggyBank,  metricKey: 'savings_ratio',       format: (v) => v < 0 ? '0%' : `${(v * 100).toFixed(0)}%` },
   volatility:    { label: 'Spending Stability', Icon: Activity, metricKey: 'spending_volatility', format: (v) => v <= 0.3 ? 'Stable' : v <= 0.6 ? 'Moderate' : 'Volatile' },
   subscriptions: { label: 'Subscription Load',  Icon: Repeat,   metricKey: 'recurring_burden',    format: (v) => `${(v * 100).toFixed(0)}% of income` },
   cash_buffer:   { label: 'Cash Buffer',      Icon: ShieldCheck, metricKey: 'cash_buffer_days',   format: (v) => `${v.toFixed(0)} days` },
@@ -319,6 +319,31 @@ function WindowTabs({ windowDays, setWindowDays, loading }) {
 // Main Component
 // ──────────────────────────────────────────────
 
+// ──────────────────────────────────────────────
+// Empty State (no account / no transactions)
+// ──────────────────────────────────────────────
+
+function EmptyState() {
+  return (
+    <div className="backdrop-blur-xl bg-white/5 rounded-2xl border border-white/10 p-6 shadow-xl">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-400/20 to-emerald-400/20 flex items-center justify-center">
+          <Heart className="w-4 h-4 text-teal-400" />
+        </div>
+        <h4 className="text-sm font-semibold text-white">Financial Health Score</h4>
+      </div>
+      <div className="flex flex-col items-center py-8 text-center gap-4">
+        <div className="w-16 h-16 rounded-2xl bg-white/5 border border-dashed border-white/10 flex items-center justify-center">
+          <Heart className="w-7 h-7 text-slate-600" />
+        </div>
+        <p className="text-sm text-slate-400 max-w-xs">
+          Connect a bank account to see your financial health score.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function HealthScoreCard({
   healthScore,
   loading,
@@ -326,7 +351,14 @@ export default function HealthScoreCard({
   refresh,
   windowDays,
   setWindowDays,
+  currentBalance,
+  transactionCount,
 }) {
+  // No linked account and no transactions — skip all calculation, show prompt
+  if (transactionCount === 0 && (currentBalance === 0 || currentBalance == null)) {
+    return <EmptyState />;
+  }
+
   // Loading state
   if (loading && !healthScore) {
     return <SkeletonCard />;
@@ -337,9 +369,9 @@ export default function HealthScoreCard({
     return <ErrorFallback error={error} onRetry={refresh} />;
   }
 
-  // No data
-  if (!healthScore) {
-    return null;
+  // Backend confirmed no data (e.g. all accounts just disconnected)
+  if (!healthScore || healthScore.no_data) {
+    return <EmptyState />;
   }
 
   const {
@@ -381,7 +413,7 @@ export default function HealthScoreCard({
         <div className="flex items-center gap-2 bg-amber-400/5 border border-amber-400/10 rounded-lg px-3 py-2">
           <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
           <p className="text-[11px] text-amber-400/80">
-            Limited data — score will be more accurate with more transaction history.
+            Limited data - score will be more accurate with more transaction history.
           </p>
         </div>
       )}

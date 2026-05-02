@@ -9,6 +9,7 @@ from routes.insights import insights_bp
 from routes.subscriptions import subscriptions_bp
 from routes.cashflow import cashflow_bp
 from routes.health_score import health_score_bp
+from routes.chatbot import chatbot_bp
 
 
 def register_blueprints(app):
@@ -20,3 +21,4 @@ def register_blueprints(app):
     app.register_blueprint(subscriptions_bp)  # /v1/subscriptions
     app.register_blueprint(cashflow_bp)  # /v1/cashflow
     app.register_blueprint(health_score_bp)  # /v1/health-score
+    app.register_blueprint(chatbot_bp)  # /v1/chatbot

@@ -6,6 +6,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from services import auth_service
+from models import user as user_model
 from utils.db import get_db
 
 auth_bp = Blueprint("auth", __name__)
@@ -54,3 +55,15 @@ def login():
 def protected():
     current_user = get_jwt_identity()
     return jsonify({"logged_in_as": current_user})
+
+
+@auth_bp.route("/profile", methods=["GET"])
+@jwt_required()
+def get_profile():
+    """Return the authenticated user's public profile (no password)."""
+    user_id = int(get_jwt_identity())
+    row = user_model.find_by_id(user_id)
+    if not row:
+        return jsonify({"error": "User not found"}), 404
+    uid, username, email = row
+    return jsonify({"id": uid, "username": username, "email": email})

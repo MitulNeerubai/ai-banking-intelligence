@@ -8,7 +8,7 @@
 import { useState, useCallback } from 'react';
 import { transactionApi } from '../api/transactionApi';
 
-const DEFAULT_PER_PAGE = 50;
+const DEFAULT_PER_PAGE = 10;
 
 export function useTransactions() {
   const [transactions, setTransactions] = useState([]);

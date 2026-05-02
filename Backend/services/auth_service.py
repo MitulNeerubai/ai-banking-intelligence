@@ -24,15 +24,19 @@ def register_user(username: str, email: str, password: str) -> dict:
     if len(password) < 6:
         raise ValidationError("Password must be at least 6 characters")
 
-    # Hash the password
+    # Reject duplicate emails before hitting the DB constraint
+    if user_model.find_by_email(email):
+        raise ConflictError("An account with this email already exists.")
+
     hashed_pw = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
 
     try:
         user_id = user_model.create_user(username, email, hashed_pw.decode("utf-8"))
     except Exception as e:
-        err_msg = str(e)
-        if "duplicate key" in err_msg or "unique constraint" in err_msg.lower():
-            raise ConflictError("An account with this email already exists")
+        # Fallback: catch the unique constraint violation from a race condition
+        err_msg = str(e).lower()
+        if "duplicate" in err_msg or "unique" in err_msg:
+            raise ConflictError("An account with this email already exists.")
         raise
 
     log.info("User registered", extra={"context": {"user_id": user_id, "email": email}})

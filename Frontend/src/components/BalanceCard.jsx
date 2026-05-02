@@ -17,7 +17,7 @@ function formatCurrency(amount) {
   }).format(amount);
 }
 
-export default function BalanceCard({ account, onDisconnect }) {
+export default function BalanceCard({ account, onDisconnect, isSelected, onSelect }) {
   const config = typeConfig[account.type] || typeConfig.depository;
   const Icon = config.icon;
 
@@ -26,7 +26,7 @@ export default function BalanceCard({ account, onDisconnect }) {
   const [error, setError] = useState(null);
 
   const handleDisconnect = async () => {
-    if (disconnecting) return; // Prevent double-click
+    if (disconnecting) return;
     setDisconnecting(true);
     setError(null);
     try {
@@ -42,7 +42,16 @@ export default function BalanceCard({ account, onDisconnect }) {
 
   return (
     <>
-      <div className="backdrop-blur-xl bg-white/5 rounded-2xl border border-white/10 p-5 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 group relative">
+      <div
+        onClick={onSelect}
+        className={`backdrop-blur-xl bg-white/5 rounded-2xl border p-5 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 group relative ${
+          onSelect ? 'cursor-pointer' : ''
+        } ${
+          isSelected
+            ? 'border-teal-500/60 ring-1 ring-teal-500/30 shadow-teal-500/10 shadow-lg'
+            : 'border-white/10'
+        }`}
+      >
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
@@ -83,7 +92,7 @@ export default function BalanceCard({ account, onDisconnect }) {
         <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between">
           <p className="text-xs text-slate-500 truncate">{account.institution_name}</p>
           <button
-            onClick={() => setShowConfirm(true)}
+            onClick={(e) => { e.stopPropagation(); setShowConfirm(true); }}
             className="opacity-0 group-hover:opacity-100 inline-flex items-center gap-1 text-[11px] text-rose-400/70 hover:text-rose-400 transition-all cursor-pointer px-2 py-1 rounded-lg hover:bg-rose-400/10"
             title="Disconnect account"
           >
@@ -91,20 +100,21 @@ export default function BalanceCard({ account, onDisconnect }) {
             Disconnect
           </button>
         </div>
+
+        {/* Selected indicator */}
+        {isSelected && (
+          <div className="absolute top-3 right-3 w-2 h-2 rounded-full bg-teal-400 shadow-lg shadow-teal-400/50" />
+        )}
       </div>
 
-      {/* ── Confirmation Modal ── */}
+      {/* Confirmation Modal */}
       {showConfirm && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => !disconnecting && setShowConfirm(false)}
           />
-
-          {/* Modal */}
           <div className="relative bg-slate-900 border border-white/10 rounded-2xl shadow-2xl max-w-md w-full p-6">
-            {/* Close button */}
             <button
               onClick={() => !disconnecting && setShowConfirm(false)}
               className="absolute top-4 right-4 text-slate-500 hover:text-white transition-colors cursor-pointer"
@@ -112,13 +122,9 @@ export default function BalanceCard({ account, onDisconnect }) {
             >
               <X className="w-5 h-5" />
             </button>
-
-            {/* Icon */}
             <div className="w-12 h-12 rounded-xl bg-rose-400/10 flex items-center justify-center mb-4">
               <AlertTriangle className="w-6 h-6 text-rose-400" />
             </div>
-
-            {/* Text */}
             <h3 className="text-lg font-semibold text-white">Disconnect Account?</h3>
             <p className="text-sm text-slate-400 mt-2 leading-relaxed">
               This will disconnect{' '}
@@ -128,15 +134,11 @@ export default function BalanceCard({ account, onDisconnect }) {
               and permanently remove all associated transactions from your dashboard.
             </p>
             <p className="text-xs text-slate-500 mt-2">This action cannot be undone.</p>
-
-            {/* Error display */}
             {error && (
               <div className="mt-3 bg-rose-500/10 border border-rose-500/20 rounded-lg px-3 py-2">
                 <p className="text-xs text-rose-300">{error}</p>
               </div>
             )}
-
-            {/* Actions */}
             <div className="flex items-center gap-3 mt-6">
               <button
                 onClick={() => setShowConfirm(false)}

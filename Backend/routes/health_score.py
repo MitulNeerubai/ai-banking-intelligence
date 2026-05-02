@@ -34,6 +34,8 @@ def get_health_score():
     account_id = request.args.get("account_id", "all")
     window_days = request.args.get("window_days", 90, type=int)
     current_balance = request.args.get("current_balance", None, type=float)
+    total_income = request.args.get("total_income", None, type=float)
+    total_spending = request.args.get("total_spending", None, type=float)
 
     log.debug("Health score request",
               extra={"context": {
@@ -48,6 +50,8 @@ def get_health_score():
             account_id=account_id,
             window_days=window_days,
             current_balance=current_balance,
+            total_income_override=total_income,
+            total_spending_override=total_spending,
         )
     except ValidationError:
         raise
