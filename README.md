@@ -143,7 +143,7 @@ See `Database/schema.sql` for the full schema definition.
 
 ---
 
-## 🔒 Security
+## Security
 
 - Passwords hashed with **bcrypt** - never stored in plain text
 - **JWT** tokens for stateless authentication
@@ -168,6 +168,6 @@ All project documentation is available in the repository:
 ## Acknowledgements
 
 - **Professor Syed Jawad Hussain Shah** - for guidance throughout the semester
-- **Commerce Bank Team** - for mid-project review and valuable feedback
+- **Commerce Bank Team** - for project review and valuable feedback
 - **University of Missouri - Kansas City** - COMP SCI 451R Capstone Program
 - **Plaid, Google Gemini, Supabase** - for free/affordable APIs
