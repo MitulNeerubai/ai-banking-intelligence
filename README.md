@@ -1,14 +1,7 @@
-# GuideSpend AI 🚀
+# GuideSpend AI
 ### Smart Spending. Clear Decisions.
 
 An AI-powered financial management platform that connects real bank accounts, visualizes spending patterns, and provides personalized financial guidance through an intelligent chatbot.
-
----
-
-## Live Demo
-
-- **Frontend:** `[Add Vercel URL here after deployment]`
-- **Backend:** `[Add Render URL here after deployment]`
 
 ---
 
